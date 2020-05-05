@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package pb;
+
+service Reverse {
+  rpc ServerConnect(RegisterMessage) returns (stream ConnectRequest) {}
+  rpc ClientConnect(ClientConnectRequest) returns (ConnectResponse) {}
+}
+
+enum ProtocolEnum {
+  GRPC = 0;
+}
+
+message ConnectRequest {
+  string IP = 1;
+  int32 Port = 2;
+  // service name
+  string ServiceName = 3;
+  // 支持的协议类型
+  ProtocolEnum Protocol = 4;
+  int32 Timeout = 5;
+}
+
+message ClientConnectRequest {
+  // server ID
+  string ID = 1;
+  ConnectRequest Request = 2;
+}
+
+message ConnectResponse {
+}
+
+message RegisterMessage {
+  string ID = 1;
+}
