@@ -37,5 +37,7 @@ func (s *BaseService) GetName() string {
 func (s *BaseService) Handle(request *pb.ConnectRequest) {
 	from := utils.IPAndPort(request.IP, uint16(request.Port))
 	err := handler.Handle(from, s.serverAddr, strings.ToLower(request.Protocol.String()), request.Timeout)
-	logger.Errorf("%v handle error: %v", s.name, err)
+	if err != nil {
+		logger.Errorf("%v handle error: %v", s.name, err)
+	}
 }

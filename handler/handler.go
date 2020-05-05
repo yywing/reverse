@@ -13,14 +13,14 @@ var logger = logrus.New()
 
 func Handle(from, to, protocol string, timeout int64) error {
 	logger.Infof("%v", from)
-	fromConnection, err := net.DialTimeout(protocol, from, time.Duration(timeout*time.Second))
+	fromConnection, err := net.DialTimeout(protocol, from, time.Duration(timeout)*time.Second)
 	if err != nil {
 		return err
 	}
 	defer fromConnection.Close()
 
 	logger.Infof("%v", to)
-	toConnection, err := net.DialTimeout(protocol, to, time.Duration(timeout*time.Second))
+	toConnection, err := net.DialTimeout(protocol, to, time.Duration(timeout)*time.Second)
 	if err != nil {
 		return err
 	}
@@ -31,14 +31,17 @@ func Handle(from, to, protocol string, timeout int64) error {
 	go func() {
 		defer wg.Done()
 		_, err := io.Copy(fromConnection, toConnection)
-		logger.Errorf("from %v to %v send data error: %v\n", fromConnection.RemoteAddr(), toConnection.RemoteAddr(), err)
-
+		if err != nil {
+			logger.Errorf("from %v to %v send data error: %v\n", fromConnection.RemoteAddr(), toConnection.RemoteAddr(), err)
+		}
 	}()
 
 	go func() {
 		defer wg.Done()
 		_, err := io.Copy(toConnection, fromConnection)
-		logger.Errorf("from %v to %v send data error: %v\n", toConnection.RemoteAddr(), fromConnection.RemoteAddr(), err)
+		if err != nil {
+			logger.Errorf("from %v to %v send data error: %v\n", toConnection.RemoteAddr(), fromConnection.RemoteAddr(), err)
+		}
 	}()
 
 	// TODO: 当一方连接断了之后另一方会断么？

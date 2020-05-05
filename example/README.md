@@ -8,7 +8,7 @@ client: grpc client from grpc example
 default port 10000
 
 ```bash
-go run ./example/server/server.go -tls=true
+go run ./example/server/server.go
 ```
 
 ## start reverse server
@@ -30,5 +30,11 @@ go run ./example/reverse_client/reverse_client.go
 use port 10002
 
 ```bash
-go run ./example/client/client.go -tls=true
+go run ./example/client/client.go
 ```
+
+## TODO
+
+- tls not work
+- client listen wait
+- reverse client connection leak

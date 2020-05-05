@@ -196,7 +196,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
-	defer conn.Close()
+	defer c.Close()
 	client := pb.NewRouteGuideClient(conn)
 
 	// Looking for a valid feature
