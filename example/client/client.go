@@ -141,6 +141,7 @@ func getConn() (net.Conn, error) {
 	}
 	defer conn.Close()
 
+	// TODO: listen with timeout
 	l, err := net.Listen("tcp", "localhost:10002")
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)

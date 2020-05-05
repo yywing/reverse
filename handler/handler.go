@@ -13,31 +13,32 @@ var logger = logrus.New()
 
 func Handle(from, to, protocol string, timeout int64) error {
 	logger.Infof("%v", from)
-	fromConnection, err := net.DialTimeout(protocol, from, time.Duration(timeout))
+	fromConnection, err := net.DialTimeout(protocol, from, time.Duration(timeout*time.Second))
 	if err != nil {
 		return err
 	}
 	defer fromConnection.Close()
 
-	logger.Infof("v", to)
-	toConnection, err := net.DialTimeout(protocol, to, time.Duration(timeout))
+	logger.Infof("%v", to)
+	toConnection, err := net.DialTimeout(protocol, to, time.Duration(timeout*time.Second))
 	if err != nil {
 		return err
 	}
 	defer toConnection.Close()
 
 	wg := sync.WaitGroup{}
-
+	wg.Add(2)
 	go func() {
+		defer wg.Done()
 		_, err := io.Copy(fromConnection, toConnection)
 		logger.Errorf("from %v to %v send data error: %v\n", fromConnection.RemoteAddr(), toConnection.RemoteAddr(), err)
-		wg.Done()
+
 	}()
 
 	go func() {
+		defer wg.Done()
 		_, err := io.Copy(toConnection, fromConnection)
 		logger.Errorf("from %v to %v send data error: %v\n", toConnection.RemoteAddr(), fromConnection.RemoteAddr(), err)
-		wg.Done()
 	}()
 
 	// TODO: 当一方连接断了之后另一方会断么？
