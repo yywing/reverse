@@ -1,7 +1,7 @@
 # Example
 
-server: grpc server from grpc example
-client: grpc client from grpc example
+server: grpc server from grpc example  
+client: grpc client from grpc example  
 
 ## start server
 
@@ -36,5 +36,5 @@ go run ./example/client/client.go
 ## TODO
 
 - tls not work
-- client listen wait
+- client listen with timemout
 - reverse client connection leak
