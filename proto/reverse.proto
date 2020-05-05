@@ -19,7 +19,7 @@ message ConnectRequest {
   string ServiceName = 3;
   // 支持的协议类型
   ProtocolEnum Protocol = 4;
-  int32 Timeout = 5;
+  int64 Timeout = 5;
 }
 
 message ClientConnectRequest {

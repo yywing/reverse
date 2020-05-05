@@ -57,13 +57,13 @@ func (c *ReverseClient) connect() error {
 	}
 	defer conn.Close()
 
-	grpcClinet := pb.NewReverseClient(conn)
+	grpcClient := pb.NewReverseClient(conn)
 
 	msg := &pb.RegisterMessage{
 		ID: c.ID,
 	}
 
-	stream, err := grpcClinet.ServerConnect(c.ctx, msg, grpc.MaxCallSendMsgSize(MAX_SEND_MSG_SIZE), grpc.MaxCallRecvMsgSize(MAX_RECEIVE_MSG_SIZE))
+	stream, err := grpcClient.ServerConnect(c.ctx, msg, grpc.MaxCallSendMsgSize(MAX_SEND_MSG_SIZE), grpc.MaxCallRecvMsgSize(MAX_RECEIVE_MSG_SIZE))
 
 	if err != nil {
 		return err
