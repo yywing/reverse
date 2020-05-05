@@ -1,3 +1,4 @@
+// This file is changed from https://github.com/grpc/grpc-go/blob/15653fec60abffdd4ed23ec7b488cbd6e1a34160/examples/route_guide/client/client.go
 package main
 
 import (
