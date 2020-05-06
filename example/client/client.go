@@ -151,20 +151,23 @@ func main() {
 	}
 
 	opts = append(opts, grpc.WithBlock())
-
 	c, err := getConn()
 	if err != nil {
 		log.Fatalf("Failed to connect %v", err)
 	}
-	conn, err := grpc.Dial(":7777", grpc.WithInsecure(),
-		grpc.WithDialer(func(target string, timeout time.Duration) (net.Conn, error) {
+	opts = append(opts, grpc.WithDialer(
+		func(target string, timeout time.Duration) (net.Conn, error) {
 			return c, nil
 		}),
 	)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer c.Close()
+	conn, err := grpc.Dial(":7777", opts...)
+	/*
+		conn, err := grpc.Dial("localhost:10000", opts...)
+		if err != nil {
+			log.Fatalf("fail to dial: %v", err)
+		}
+	*/
+	defer conn.Close()
 	client := pb.NewRouteGuideClient(conn)
 
 	// Looking for a valid feature
