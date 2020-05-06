@@ -9,6 +9,7 @@ default port 10000
 
 ```bash
 go run ./example/server/server.go
+# -tls true  test tls
 ```
 
 ## start reverse server
@@ -31,10 +32,10 @@ use port 10002
 
 ```bash
 go run ./example/client/client.go
+# -tls true  test tls
 ```
 
 ## TODO
 
-- tls not work
 - client listen with timemout
-- reverse client connection leak
+- reverse client connection leak(do more test)
