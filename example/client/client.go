@@ -134,39 +134,6 @@ func randomPoint(r *rand.Rand) *pb.Point {
 	return &pb.Point{Latitude: lat, Longitude: long}
 }
 
-func getConn() (net.Conn, error) {
-	// 建立连接
-	conn, err := grpc.Dial(*reverseAddr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-
-	// TODO: listen with timeout
-	l, err := net.Listen("tcp", "localhost:10002")
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-
-	msg := &reversepb.ClientConnectRequest{
-		ID: *id,
-		Request: &reversepb.ConnectRequest{
-			IP:          "localhost",
-			Port:        10002,
-			ServiceName: *serveiceName,
-			Protocol:    reversepb.ProtocolEnum_TCP,
-			Timeout:     10,
-		},
-	}
-
-	grpcClient := reversepb.NewReverseClient(conn)
-	_, err = grpcClient.ClientConnect(context.Background(), msg)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	return l.Accept()
-}
-
 func main() {
 	flag.Parse()
 	var opts []grpc.DialOption
@@ -217,4 +184,37 @@ func main() {
 
 	// RouteChat
 	runRouteChat(client)
+}
+
+func getConn() (net.Conn, error) {
+	// 建立连接
+	conn, err := grpc.Dial(*reverseAddr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
+
+	// TODO: listen with timeout and random port
+	l, err := net.Listen("tcp", "localhost:10002")
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+
+	msg := &reversepb.ClientConnectRequest{
+		ID: *id,
+		Request: &reversepb.ConnectRequest{
+			IP:          "localhost",
+			Port:        10002,
+			ServiceName: *serveiceName,
+			Protocol:    reversepb.ProtocolEnum_TCP,
+			Timeout:     10,
+		},
+	}
+
+	grpcClient := reversepb.NewReverseClient(conn)
+	_, err = grpcClient.ClientConnect(context.Background(), msg)
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	return l.Accept()
 }

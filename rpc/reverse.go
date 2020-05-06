@@ -30,9 +30,11 @@ func (s *ReverseService) Register(srv *grpc.Server) {
 }
 
 func (s *ReverseService) ClientConnect(ctx context.Context, request *pb.ClientConnectRequest) (*pb.ConnectResponse, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	ch, ok := s.chs[request.ID]
 	if !ok {
-		return nil, errors.Errorf("server connect stream load error")
+		return nil, errors.Errorf("server connect stream load error with id: %v", request.ID)
 	}
 	ch <- request.Request
 	return &pb.ConnectResponse{}, nil
