@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
-	"io"
+	"fmt"
 	pb "reverse/proto"
 	"reverse/service"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -22,6 +23,7 @@ type ReverseClient struct {
 	ID         string
 	ServerAddr string
 	Services   map[string]service.Service
+	KeepAlive  int
 }
 
 func NewReverseClient(ctx context.Context, id string, serverAddr string, services map[string]service.Service) *ReverseClient {
@@ -35,10 +37,11 @@ func NewReverseClient(ctx context.Context, id string, serverAddr string, service
 
 func (c *ReverseClient) Run() {
 	for {
+		logger.Info("reverse client start connet ...")
 		err := c.connect()
 		logger.Errorf("reverse client connect error: %s", err)
+		time.Sleep(1 * time.Second)
 	}
-
 }
 
 func (c *ReverseClient) handle(request *pb.ConnectRequest) {
@@ -59,27 +62,51 @@ func (c *ReverseClient) connect() error {
 
 	grpcClient := pb.NewReverseClient(conn)
 
-	msg := &pb.RegisterMessage{
-		ID: c.ID,
-	}
+	ctx, cancel := context.WithCancel(c.ctx)
+	defer cancel()
 
-	stream, err := grpcClient.ServerConnect(c.ctx, msg, grpc.MaxCallSendMsgSize(MAX_SEND_MSG_SIZE), grpc.MaxCallRecvMsgSize(MAX_RECEIVE_MSG_SIZE))
+	stream, err := grpcClient.ServerConnect(ctx, grpc.MaxCallSendMsgSize(MAX_SEND_MSG_SIZE), grpc.MaxCallRecvMsgSize(MAX_RECEIVE_MSG_SIZE))
 
 	if err != nil {
 		return err
 	}
 
+	msg := &pb.ServerRequest{
+		Message: &pb.ServerRequest_Register{
+			Register: &pb.RegisterMessage{
+				ID: c.ID,
+			},
+		},
+	}
+	err = stream.Send(msg)
+
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		t := time.NewTicker(time.Second * time.Duration(c.KeepAlive))
+		defer t.Stop()
+		for range t.C {
+			msg := &pb.ServerRequest{
+				Message: &pb.ServerRequest_Heartbeat{
+					Heartbeat: &pb.HeartbeatMessage{},
+				},
+			}
+			err = stream.Send(msg)
+			if err != nil {
+				logger.Errorf("stream send err: %v", err)
+				cancel()
+				return
+			}
+		}
+	}()
+
 	for {
 		request, err := stream.Recv()
 		if err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				return nil
-			}
+			return fmt.Errorf("stream receive err: %v", err)
 		}
 		go c.handle(request)
 	}
-
-	return nil
 }

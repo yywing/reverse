@@ -25,6 +25,10 @@ func NewReverseService() *ReverseService {
 	}
 }
 
+func (s *ReverseService) PrintServices() {
+	logger.Infof("register services %+v", s.chs)
+}
+
 func (s *ReverseService) Register(srv *grpc.Server) {
 	pb.RegisterReverseServer(srv, s)
 }
@@ -40,23 +44,49 @@ func (s *ReverseService) ClientConnect(ctx context.Context, request *pb.ClientCo
 	return &pb.ConnectResponse{}, nil
 }
 
-func (s *ReverseService) ServerConnect(request *pb.RegisterMessage, stream pb.Reverse_ServerConnectServer) error {
+func (s *ReverseService) ServerConnect(stream pb.Reverse_ServerConnectServer) error {
+	first, err := stream.Recv()
+	if err != nil {
+		logger.Errorf("server connect get firest msg err: %s", err)
+	}
+	request, ok := first.Message.(*pb.ServerRequest_Register)
+	if !ok {
+		logger.Errorf("server connect first msg type error")
+	}
 	ch := make(chan *pb.ConnectRequest)
-	s.chs[request.ID] = ch
+	s.chs[request.Register.ID] = ch
 
 	defer func() {
 		s.mutex.Lock()
-		delete(s.chs, request.ID)
+		delete(s.chs, request.Register.ID)
 		close(ch)
 		s.mutex.Unlock()
+		logger.Infof("server connect %v exit!", request.Register.ID)
 	}()
 
-	for msg := range ch {
-		err := stream.Send(msg)
-		if err != nil {
-			logger.Errorf("server connect send msg to %s error: %s", request.ID, err)
+	ctx, cancel := context.WithCancel(stream.Context())
+
+	go func() {
+		for {
+			_, err := stream.Recv()
+			if err != nil {
+				logger.Errorf("server connect heartbeat receive err: %v", err)
+				cancel()
+				return
+			}
+		}
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			logger.Infof("server connect %v send msg exit!", request.Register.ID)
+			return nil
+		case msg := <-ch:
+			err := stream.Send(msg)
+			if err != nil {
+				logger.Errorf("server connect send msg to %s error: %s", request.Register.ID, err)
+			}
 		}
 	}
-
-	return nil
 }

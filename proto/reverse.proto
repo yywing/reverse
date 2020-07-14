@@ -3,7 +3,9 @@ syntax = "proto3";
 package pb;
 
 service Reverse {
-  rpc ServerConnect(RegisterMessage) returns (stream ConnectRequest) {}
+  // Server connect
+  rpc ServerConnect(stream ServerRequest) returns (stream ConnectRequest) {}
+  // Client connect
   rpc ClientConnect(ClientConnectRequest) returns (ConnectResponse) {}
 }
 
@@ -12,13 +14,12 @@ enum ProtocolEnum {
   UDP = 1;
 }
 
+// Client listen ip and protocol
 message ConnectRequest {
   string IP = 1;
   int32 Port = 2;
   // service name
   string ServiceName = 3;
-  // 支持的协议类型
-  ProtocolEnum Protocol = 4;
   int64 Timeout = 5;
 }
 
@@ -33,4 +34,17 @@ message ConnectResponse {
 
 message RegisterMessage {
   string ID = 1;
+}
+
+message HeartbeatMessage {
+}
+
+// first msg always register message,and then send heartbeat
+message ServerRequest {
+  oneof Message {
+    // server register
+    RegisterMessage Register = 1;
+    // server heartbeat
+    HeartbeatMessage Heartbeat= 2;
+  }
 }

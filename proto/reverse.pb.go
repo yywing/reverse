@@ -49,17 +49,16 @@ func (ProtocolEnum) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_142d12653d52cef8, []int{0}
 }
 
+// Client listen ip and protocol
 type ConnectRequest struct {
 	IP   string `protobuf:"bytes,1,opt,name=IP,proto3" json:"IP,omitempty"`
 	Port int32  `protobuf:"varint,2,opt,name=Port,proto3" json:"Port,omitempty"`
 	// service name
-	ServiceName string `protobuf:"bytes,3,opt,name=ServiceName,proto3" json:"ServiceName,omitempty"`
-	// 支持的协议类型
-	Protocol             ProtocolEnum `protobuf:"varint,4,opt,name=Protocol,proto3,enum=pb.ProtocolEnum" json:"Protocol,omitempty"`
-	Timeout              int64        `protobuf:"varint,5,opt,name=Timeout,proto3" json:"Timeout,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
+	ServiceName          string   `protobuf:"bytes,3,opt,name=ServiceName,proto3" json:"ServiceName,omitempty"`
+	Timeout              int64    `protobuf:"varint,5,opt,name=Timeout,proto3" json:"Timeout,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *ConnectRequest) Reset()         { *m = ConnectRequest{} }
@@ -106,13 +105,6 @@ func (m *ConnectRequest) GetServiceName() string {
 		return m.ServiceName
 	}
 	return ""
-}
-
-func (m *ConnectRequest) GetProtocol() ProtocolEnum {
-	if m != nil {
-		return m.Protocol
-	}
-	return ProtocolEnum_TCP
 }
 
 func (m *ConnectRequest) GetTimeout() int64 {
@@ -240,37 +232,154 @@ func (m *RegisterMessage) GetID() string {
 	return ""
 }
 
+type HeartbeatMessage struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *HeartbeatMessage) Reset()         { *m = HeartbeatMessage{} }
+func (m *HeartbeatMessage) String() string { return proto.CompactTextString(m) }
+func (*HeartbeatMessage) ProtoMessage()    {}
+func (*HeartbeatMessage) Descriptor() ([]byte, []int) {
+	return fileDescriptor_142d12653d52cef8, []int{4}
+}
+
+func (m *HeartbeatMessage) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HeartbeatMessage.Unmarshal(m, b)
+}
+func (m *HeartbeatMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HeartbeatMessage.Marshal(b, m, deterministic)
+}
+func (m *HeartbeatMessage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HeartbeatMessage.Merge(m, src)
+}
+func (m *HeartbeatMessage) XXX_Size() int {
+	return xxx_messageInfo_HeartbeatMessage.Size(m)
+}
+func (m *HeartbeatMessage) XXX_DiscardUnknown() {
+	xxx_messageInfo_HeartbeatMessage.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HeartbeatMessage proto.InternalMessageInfo
+
+// first msg always register message,and then send heartbeat
+type ServerRequest struct {
+	// Types that are valid to be assigned to Message:
+	//	*ServerRequest_Register
+	//	*ServerRequest_Heartbeat
+	Message              isServerRequest_Message `protobuf_oneof:"Message"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
+}
+
+func (m *ServerRequest) Reset()         { *m = ServerRequest{} }
+func (m *ServerRequest) String() string { return proto.CompactTextString(m) }
+func (*ServerRequest) ProtoMessage()    {}
+func (*ServerRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_142d12653d52cef8, []int{5}
+}
+
+func (m *ServerRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServerRequest.Unmarshal(m, b)
+}
+func (m *ServerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServerRequest.Marshal(b, m, deterministic)
+}
+func (m *ServerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServerRequest.Merge(m, src)
+}
+func (m *ServerRequest) XXX_Size() int {
+	return xxx_messageInfo_ServerRequest.Size(m)
+}
+func (m *ServerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServerRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ServerRequest proto.InternalMessageInfo
+
+type isServerRequest_Message interface {
+	isServerRequest_Message()
+}
+
+type ServerRequest_Register struct {
+	Register *RegisterMessage `protobuf:"bytes,1,opt,name=Register,proto3,oneof"`
+}
+
+type ServerRequest_Heartbeat struct {
+	Heartbeat *HeartbeatMessage `protobuf:"bytes,2,opt,name=Heartbeat,proto3,oneof"`
+}
+
+func (*ServerRequest_Register) isServerRequest_Message() {}
+
+func (*ServerRequest_Heartbeat) isServerRequest_Message() {}
+
+func (m *ServerRequest) GetMessage() isServerRequest_Message {
+	if m != nil {
+		return m.Message
+	}
+	return nil
+}
+
+func (m *ServerRequest) GetRegister() *RegisterMessage {
+	if x, ok := m.GetMessage().(*ServerRequest_Register); ok {
+		return x.Register
+	}
+	return nil
+}
+
+func (m *ServerRequest) GetHeartbeat() *HeartbeatMessage {
+	if x, ok := m.GetMessage().(*ServerRequest_Heartbeat); ok {
+		return x.Heartbeat
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*ServerRequest) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*ServerRequest_Register)(nil),
+		(*ServerRequest_Heartbeat)(nil),
+	}
+}
+
 func init() {
 	proto.RegisterEnum("pb.ProtocolEnum", ProtocolEnum_name, ProtocolEnum_value)
 	proto.RegisterType((*ConnectRequest)(nil), "pb.ConnectRequest")
 	proto.RegisterType((*ClientConnectRequest)(nil), "pb.ClientConnectRequest")
 	proto.RegisterType((*ConnectResponse)(nil), "pb.ConnectResponse")
 	proto.RegisterType((*RegisterMessage)(nil), "pb.RegisterMessage")
+	proto.RegisterType((*HeartbeatMessage)(nil), "pb.HeartbeatMessage")
+	proto.RegisterType((*ServerRequest)(nil), "pb.ServerRequest")
 }
 
 func init() { proto.RegisterFile("reverse.proto", fileDescriptor_142d12653d52cef8) }
 
 var fileDescriptor_142d12653d52cef8 = []byte{
-	// 302 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0x4f, 0x6e, 0xf2, 0x30,
-	0x10, 0xc5, 0x71, 0x80, 0x8f, 0xaf, 0x43, 0xf9, 0xd3, 0xa1, 0x0b, 0x8b, 0x95, 0x9b, 0x55, 0x54,
-	0x21, 0x54, 0xd1, 0x6d, 0x17, 0x95, 0xa0, 0x0b, 0x16, 0xad, 0x2c, 0x97, 0x1e, 0x00, 0xd0, 0x08,
-	0x45, 0x82, 0x38, 0xb5, 0x0d, 0x77, 0xe8, 0x25, 0x7a, 0xd6, 0xca, 0x16, 0x89, 0x08, 0xca, 0x6e,
-	0x3c, 0xf3, 0xec, 0xf7, 0x9b, 0x67, 0xe8, 0x19, 0x3a, 0x91, 0xb1, 0x34, 0xcd, 0x8d, 0x76, 0x1a,
-	0xa3, 0x7c, 0x13, 0xff, 0x32, 0xe8, 0xcf, 0x75, 0x96, 0xd1, 0xd6, 0x29, 0xfa, 0x3e, 0x92, 0x75,
-	0xd8, 0x87, 0x68, 0x29, 0x39, 0x13, 0x2c, 0xb9, 0x51, 0xd1, 0x52, 0x22, 0x42, 0x4b, 0x6a, 0xe3,
-	0x78, 0x24, 0x58, 0xd2, 0x56, 0xa1, 0x46, 0x01, 0xdd, 0x4f, 0x32, 0xa7, 0x74, 0x4b, 0x1f, 0xeb,
-	0x03, 0xf1, 0x66, 0x10, 0x5f, 0xb6, 0x70, 0x02, 0xff, 0xa5, 0x77, 0xd9, 0xea, 0x3d, 0x6f, 0x09,
-	0x96, 0xf4, 0x67, 0xc3, 0x69, 0xbe, 0x99, 0x16, 0xbd, 0xb7, 0xec, 0x78, 0x50, 0xa5, 0x02, 0x39,
-	0x74, 0x56, 0xe9, 0x81, 0xf4, 0xd1, 0xf1, 0xb6, 0x60, 0x49, 0x53, 0x15, 0xc7, 0x78, 0x05, 0xf7,
-	0xf3, 0x7d, 0x4a, 0x99, 0xab, 0xa1, 0x5c, 0x94, 0x94, 0x0b, 0x9c, 0x40, 0xe7, 0x3c, 0x0a, 0xa0,
-	0xdd, 0x19, 0x7a, 0xbb, 0xea, 0x25, 0x55, 0x48, 0xe2, 0x3b, 0x18, 0x94, 0x23, 0x9b, 0xeb, 0xcc,
-	0x52, 0xfc, 0x00, 0x03, 0x45, 0xbb, 0xd4, 0x3a, 0x32, 0xef, 0x64, 0xed, 0x7a, 0x47, 0xd7, 0x1e,
-	0x8f, 0x02, 0x6e, 0x2f, 0xf9, 0xb1, 0x03, 0xcd, 0xd5, 0x5c, 0x0e, 0x1b, 0xbe, 0xf8, 0x5a, 0xc8,
-	0x21, 0x9b, 0xfd, 0x30, 0x8f, 0x11, 0x42, 0xc6, 0x17, 0xe8, 0xf9, 0x40, 0xc8, 0x9c, 0x9d, 0x70,
-	0xe4, 0x89, 0xae, 0x3c, 0xc6, 0x35, 0x98, 0x71, 0xe3, 0x89, 0xe1, 0x2b, 0xf4, 0x2a, 0x7b, 0x23,
-	0x0f, 0xc2, 0x9a, 0x28, 0xc6, 0xa3, 0xca, 0x13, 0xe7, 0x75, 0x1a, 0x9b, 0x7f, 0xe1, 0x97, 0x9f,
-	0xff, 0x02, 0x00, 0x00, 0xff, 0xff, 0x3a, 0x83, 0xc7, 0xa9, 0xf6, 0x01, 0x00, 0x00,
+	// 342 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x52, 0x4d, 0x6f, 0xe2, 0x30,
+	0x14, 0x8c, 0xc3, 0xb2, 0x59, 0x1e, 0xcb, 0xd7, 0x83, 0x43, 0xc4, 0x29, 0x9b, 0x53, 0xb4, 0xaa,
+	0x50, 0x4b, 0x7b, 0xec, 0xa1, 0x2a, 0x54, 0x82, 0x43, 0xab, 0xc8, 0xa5, 0x3f, 0x20, 0x41, 0x4f,
+	0x28, 0x12, 0xc4, 0xa9, 0x6d, 0xf8, 0x03, 0x3d, 0xf5, 0x5f, 0x57, 0xb6, 0x92, 0xb4, 0x41, 0xdc,
+	0x1c, 0x7b, 0xde, 0xcc, 0xbc, 0x99, 0x40, 0x4f, 0xd2, 0x89, 0xa4, 0xa2, 0x59, 0x21, 0x85, 0x16,
+	0xe8, 0x16, 0x69, 0x58, 0x40, 0x7f, 0x21, 0xf2, 0x9c, 0xb6, 0x9a, 0xd3, 0xfb, 0x91, 0x94, 0xc6,
+	0x3e, 0xb8, 0xeb, 0xd8, 0x67, 0x01, 0x8b, 0x3a, 0xdc, 0x5d, 0xc7, 0x88, 0xf0, 0x2b, 0x16, 0x52,
+	0xfb, 0x6e, 0xc0, 0xa2, 0x36, 0xb7, 0x67, 0x0c, 0xa0, 0xfb, 0x4a, 0xf2, 0x94, 0x6d, 0xe9, 0x25,
+	0x39, 0x90, 0xdf, 0xb2, 0xe0, 0x9f, 0x57, 0xe8, 0x83, 0xb7, 0xc9, 0x0e, 0x24, 0x8e, 0xda, 0x6f,
+	0x07, 0x2c, 0x6a, 0xf1, 0xea, 0x33, 0xdc, 0xc0, 0x64, 0xb1, 0xcf, 0x28, 0xd7, 0x17, 0x74, 0x97,
+	0xb5, 0xee, 0x12, 0xaf, 0xc0, 0x2b, 0x9f, 0xac, 0x74, 0x77, 0x8e, 0xb3, 0x22, 0x9d, 0x35, 0x87,
+	0x78, 0x05, 0x09, 0x47, 0x30, 0xa8, 0x9f, 0x54, 0x21, 0x72, 0x45, 0xe1, 0x3f, 0x18, 0x70, 0xda,
+	0x65, 0x4a, 0x93, 0x7c, 0x26, 0xa5, 0x92, 0x1d, 0x9d, 0x6b, 0x84, 0x08, 0xc3, 0x15, 0x25, 0x52,
+	0xa7, 0x94, 0xe8, 0x12, 0x13, 0x7e, 0x30, 0xe8, 0x99, 0x4d, 0x48, 0x56, 0xce, 0x6e, 0xe0, 0x4f,
+	0x45, 0x64, 0x67, 0xbb, 0xf3, 0xb1, 0xb1, 0x72, 0x46, 0xbe, 0x72, 0x78, 0x0d, 0xc3, 0x3b, 0xe8,
+	0xd4, 0xc4, 0xa5, 0xfd, 0x89, 0x99, 0x39, 0x57, 0x5b, 0x39, 0xfc, 0x1b, 0xf8, 0xd8, 0x01, 0xaf,
+	0xbc, 0xff, 0x1f, 0xc0, 0xdf, 0xd8, 0x94, 0xb4, 0x15, 0xfb, 0xa7, 0xfc, 0x78, 0x40, 0x0f, 0x5a,
+	0x9b, 0x45, 0x3c, 0x74, 0xcc, 0xe1, 0x6d, 0x19, 0x0f, 0xd9, 0xfc, 0x93, 0x99, 0x80, 0x6c, 0x9f,
+	0x78, 0x5f, 0x59, 0x2e, 0x33, 0xc0, 0x91, 0x11, 0x6b, 0x6c, 0x31, 0xbd, 0x10, 0x5f, 0xe8, 0x44,
+	0xec, 0x9a, 0xe1, 0x03, 0xf4, 0x1a, 0x8d, 0xa0, 0x6f, 0xa1, 0x17, 0x4a, 0x9a, 0x8e, 0x1b, 0x24,
+	0x65, 0xd0, 0x4e, 0xfa, 0xdb, 0xfe, 0x50, 0xb7, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x0b, 0xce,
+	0xa2, 0x66, 0x61, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -285,7 +394,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type ReverseClient interface {
-	ServerConnect(ctx context.Context, in *RegisterMessage, opts ...grpc.CallOption) (Reverse_ServerConnectClient, error)
+	// Server connect
+	ServerConnect(ctx context.Context, opts ...grpc.CallOption) (Reverse_ServerConnectClient, error)
+	// Client connect
 	ClientConnect(ctx context.Context, in *ClientConnectRequest, opts ...grpc.CallOption) (*ConnectResponse, error)
 }
 
@@ -297,28 +408,27 @@ func NewReverseClient(cc *grpc.ClientConn) ReverseClient {
 	return &reverseClient{cc}
 }
 
-func (c *reverseClient) ServerConnect(ctx context.Context, in *RegisterMessage, opts ...grpc.CallOption) (Reverse_ServerConnectClient, error) {
+func (c *reverseClient) ServerConnect(ctx context.Context, opts ...grpc.CallOption) (Reverse_ServerConnectClient, error) {
 	stream, err := c.cc.NewStream(ctx, &_Reverse_serviceDesc.Streams[0], "/pb.Reverse/ServerConnect", opts...)
 	if err != nil {
 		return nil, err
 	}
 	x := &reverseServerConnectClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
 	return x, nil
 }
 
 type Reverse_ServerConnectClient interface {
+	Send(*ServerRequest) error
 	Recv() (*ConnectRequest, error)
 	grpc.ClientStream
 }
 
 type reverseServerConnectClient struct {
 	grpc.ClientStream
+}
+
+func (x *reverseServerConnectClient) Send(m *ServerRequest) error {
+	return x.ClientStream.SendMsg(m)
 }
 
 func (x *reverseServerConnectClient) Recv() (*ConnectRequest, error) {
@@ -340,7 +450,9 @@ func (c *reverseClient) ClientConnect(ctx context.Context, in *ClientConnectRequ
 
 // ReverseServer is the server API for Reverse service.
 type ReverseServer interface {
-	ServerConnect(*RegisterMessage, Reverse_ServerConnectServer) error
+	// Server connect
+	ServerConnect(Reverse_ServerConnectServer) error
+	// Client connect
 	ClientConnect(context.Context, *ClientConnectRequest) (*ConnectResponse, error)
 }
 
@@ -348,7 +460,7 @@ type ReverseServer interface {
 type UnimplementedReverseServer struct {
 }
 
-func (*UnimplementedReverseServer) ServerConnect(req *RegisterMessage, srv Reverse_ServerConnectServer) error {
+func (*UnimplementedReverseServer) ServerConnect(srv Reverse_ServerConnectServer) error {
 	return status.Errorf(codes.Unimplemented, "method ServerConnect not implemented")
 }
 func (*UnimplementedReverseServer) ClientConnect(ctx context.Context, req *ClientConnectRequest) (*ConnectResponse, error) {
@@ -360,15 +472,12 @@ func RegisterReverseServer(s *grpc.Server, srv ReverseServer) {
 }
 
 func _Reverse_ServerConnect_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(RegisterMessage)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(ReverseServer).ServerConnect(m, &reverseServerConnectServer{stream})
+	return srv.(ReverseServer).ServerConnect(&reverseServerConnectServer{stream})
 }
 
 type Reverse_ServerConnectServer interface {
 	Send(*ConnectRequest) error
+	Recv() (*ServerRequest, error)
 	grpc.ServerStream
 }
 
@@ -378,6 +487,14 @@ type reverseServerConnectServer struct {
 
 func (x *reverseServerConnectServer) Send(m *ConnectRequest) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func (x *reverseServerConnectServer) Recv() (*ServerRequest, error) {
+	m := new(ServerRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func _Reverse_ClientConnect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -412,6 +529,7 @@ var _Reverse_serviceDesc = grpc.ServiceDesc{
 			StreamName:    "ServerConnect",
 			Handler:       _Reverse_ServerConnect_Handler,
 			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "reverse.proto",
